@@ -61,6 +61,12 @@
           <input type="text" id="name" placeholder="Enter your username" autocomplete="off" required minlength="2" maxlength="15" />
         </div>
         
+        <div class="input-group">
+          <label for="roomCode"><i class="fa-solid fa-key"></i> Secret Code (Room)</label>
+          <input type="text" id="roomCode" placeholder="e.g., family-chat (optional)" autocomplete="off" maxlength="20" />
+          <span class="input-help">Leave empty to join the default public room.</span>
+        </div>
+        
         <div class="avatar-preview-section">
           <label>Avatar Preview</label>
           <div class="avatar-row">
@@ -134,8 +140,8 @@
       <main class="chat-container">
         <header class="chat-header">
           <div class="chat-header-info">
-            <h2>Public Lobby</h2>
-            <p>Real-time broad-casted chat room</p>
+            <h2 id="chatRoomTitle">Public Lobby</h2>
+            <p id="chatRoomDesc">Real-time broad-casted chat room</p>
           </div>
           <div class="chat-actions">
             <!-- Info button / custom stuff -->

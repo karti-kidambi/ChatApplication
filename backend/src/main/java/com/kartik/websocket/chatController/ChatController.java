@@ -1,30 +1,36 @@
 package com.kartik.websocket.chatController;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
 
 @Controller
+@RequiredArgsConstructor
 public class ChatController {
 
-    @MessageMapping("/chat.send")
-    @SendTo("/topic/public")
-    public ChatMessage sendMessage(
+    private final SimpMessageSendingOperations messagingTemplate;
+
+    @MessageMapping("/chat.send/{roomCode}")
+    public void sendMessage(
+            @DestinationVariable String roomCode,
             @Payload ChatMessage chatMessage
     ) {
-        return chatMessage;
+        messagingTemplate.convertAndSend("/topic/" + roomCode, chatMessage);
     }
 
-    @MessageMapping("/chat.register")
-    @SendTo("/topic/public")
-    public ChatMessage register(
+    @MessageMapping("/chat.register/{roomCode}")
+    public void register(
+            @DestinationVariable String roomCode,
             @Payload ChatMessage chatMessage,
             SimpMessageHeaderAccessor headerAccessor
     ) {
-        // Add username in web socket session
+        // Add username and roomCode in web socket session
         headerAccessor.getSessionAttributes().put("username", chatMessage.getSender());
-        return chatMessage;
+        headerAccessor.getSessionAttributes().put("roomCode", roomCode);
+        messagingTemplate.convertAndSend("/topic/" + roomCode, chatMessage);
     }
 }

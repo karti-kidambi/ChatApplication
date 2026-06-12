@@ -3,6 +3,7 @@
 // App State
 let stompClient = null;
 let username = null;
+let roomCode = 'public';
 let backendUrl = null;
 let currentTheme = 'dark';
 let soundEnabled = true;
@@ -100,6 +101,7 @@ const messageForm = document.getElementById('messageForm');
 
 const backendUrlInput = document.getElementById('backendUrl');
 const nameInput = document.getElementById('name');
+const roomCodeInput = document.getElementById('roomCode');
 const messageInput = document.getElementById('message');
 
 const avatarPreview = document.getElementById('avatar-preview');
@@ -191,6 +193,11 @@ backToConnectionBtn.addEventListener('click', (e) => {
 usernameForm.addEventListener('submit', (e) => {
   e.preventDefault();
   username = nameInput.value.trim();
+  const rawRoomCode = roomCodeInput.value.trim().toLowerCase();
+  roomCode = rawRoomCode ? rawRoomCode.replace(/[^a-z0-9-_]/g, '') : 'public';
+  if (!roomCode) {
+    roomCode = 'public';
+  }
   if (username) {
     usernamePage.classList.remove('active');
     chatPage.classList.add('active');
@@ -290,11 +297,24 @@ function onConnected() {
     sidebarBackendHost.textContent = backendUrl;
   }
 
-  // Subscribe to Public channel
-  stompClient.subscribe('/topic/public', onMessageReceived);
+  // Update Chat Header Info dynamically based on Room Code
+  const chatRoomTitle = document.getElementById('chatRoomTitle');
+  const chatRoomDesc = document.getElementById('chatRoomDesc');
+  if (chatRoomTitle && chatRoomDesc) {
+    if (roomCode === 'public') {
+      chatRoomTitle.textContent = 'Public Lobby';
+      chatRoomDesc.textContent = 'Real-time broad-casted chat room';
+    } else {
+      chatRoomTitle.textContent = 'Room: ' + roomCode;
+      chatRoomDesc.textContent = 'Private secure chat room';
+    }
+  }
 
-  // Send JOIN message to announce yourself
-  stompClient.send("/app/chat.register",
+  // Subscribe to Room-specific channel
+  stompClient.subscribe('/topic/' + roomCode, onMessageReceived);
+
+  // Send JOIN message to announce yourself to the room
+  stompClient.send("/app/chat.register/" + roomCode,
     {},
     JSON.stringify({ sender: username, type: 'JOIN' })
   );
@@ -348,14 +368,14 @@ function sendMessage(e) {
     isLocalTyping = false;
     sendTypingStatus('STOP');
 
-    stompClient.send("/app/chat.send", {}, JSON.stringify(chatMsg));
+    stompClient.send("/app/chat.send/" + roomCode, {}, JSON.stringify(chatMsg));
     messageInput.value = '';
   }
 }
 
 function sendTypingStatus(status) {
   if (stompClient) {
-    stompClient.send("/app/chat.send", {}, JSON.stringify({
+    stompClient.send("/app/chat.send/" + roomCode, {}, JSON.stringify({
       sender: username,
       type: 'TYPING',
       content: status

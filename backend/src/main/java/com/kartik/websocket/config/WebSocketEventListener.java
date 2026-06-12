@@ -22,13 +22,15 @@ public class WebSocketEventListener {
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
         String username = (String) headerAccessor.getSessionAttributes().get("username");
+        String roomCode = (String) headerAccessor.getSessionAttributes().get("roomCode");
         if (username != null) {
-            log.info("user disconnected: {}", username);
+            log.info("user disconnected: {} from room: {}", username, roomCode);
             var chatMessage = ChatMessage.builder()
                     .type(MessageType.LEAVE)
                     .sender(username)
                     .build();
-            messagingTemplate.convertAndSend("/topic/public", chatMessage);
+            String destination = (roomCode != null) ? "/topic/" + roomCode : "/topic/public";
+            messagingTemplate.convertAndSend(destination, chatMessage);
         }
     }
 
