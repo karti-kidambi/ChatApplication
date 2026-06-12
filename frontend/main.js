@@ -122,8 +122,16 @@ const typingText = document.getElementById('typingText');
 
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
-  // Pre-populate backend host if running locally
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+  // Load backend URL preference (query param > localStorage > localhost default)
+  const urlParams = new URLSearchParams(window.location.search);
+  const backendParam = urlParams.get('backend');
+  const savedBackendUrl = localStorage.getItem('backendUrl');
+
+  if (backendParam) {
+    backendUrlInput.value = backendParam;
+  } else if (savedBackendUrl) {
+    backendUrlInput.value = savedBackendUrl;
+  } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
     backendUrlInput.value = 'http://localhost:8888/ws';
   }
 
@@ -247,6 +255,9 @@ function connectWebSocket() {
 
 function onConnected() {
   setServerStatus('connected', 'Connected');
+  
+  // Cache successful backend URL connection
+  localStorage.setItem('backendUrl', backendUrl);
   
   // Update Profile Sidebar info
   sidebarUserAvatar.textContent = username.charAt(0).toUpperCase();
