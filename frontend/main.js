@@ -119,10 +119,11 @@ const clearChatBtn = document.getElementById('clearChatBtn');
 const disconnectBtn = document.getElementById('disconnectBtn');
 const typingIndicator = document.getElementById('typingIndicator');
 const typingText = document.getElementById('typingText');
+const backToConnectionBtn = document.getElementById('backToConnectionBtn');
 
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
-  // Load backend URL preference (query param > localStorage > localhost default)
+  // Load backend URL preference (query param > localStorage > localhost default > production default)
   const urlParams = new URLSearchParams(window.location.search);
   const backendParam = urlParams.get('backend');
   const savedBackendUrl = localStorage.getItem('backendUrl');
@@ -133,6 +134,15 @@ document.addEventListener('DOMContentLoaded', () => {
     backendUrlInput.value = savedBackendUrl;
   } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
     backendUrlInput.value = 'http://localhost:8888/ws';
+  } else {
+    backendUrlInput.value = 'https://chatapplication-1xcc.onrender.com/ws';
+  }
+
+  // If a backend URL is set, bypass connection screen and go straight to username screen
+  backendUrl = backendUrlInput.value.trim();
+  if (backendUrl) {
+    connectionPage.classList.remove('active');
+    usernamePage.classList.add('active');
   }
 
   // Load theme preference
@@ -168,6 +178,14 @@ connectionForm.addEventListener('submit', (e) => {
     connectionPage.classList.remove('active');
     usernamePage.classList.add('active');
   }
+});
+
+backToConnectionBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  // Clear any auto-saved or cached values if they manually want to change server
+  backendUrl = '';
+  usernamePage.classList.remove('active');
+  connectionPage.classList.add('active');
 });
 
 usernameForm.addEventListener('submit', (e) => {

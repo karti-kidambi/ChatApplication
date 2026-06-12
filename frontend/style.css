@@ -910,3 +910,9 @@ body.light-theme .message-form input {
     max-width: 100%;
   }
 }
+
+.form-footer-link a:hover {
+  color: var(--accent-color) !important;
+  text-shadow: 0 0 8px var(--accent-light);
+}
+
